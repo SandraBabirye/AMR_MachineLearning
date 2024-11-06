@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create necessary directories
-mkdir -p Results/Trimmed Results/TrimmedUnpaired Results/Post_trimming_QC Results/sam Results/bam Results/vcf Results/bcf Results/sorted.bam Results/Aligned.stats Results/Multiqc_post_trimming
+mkdir -p Results/Trimmed Results/TrimmedUnpaired Results/Post_trimming_QC  Results/Multiqc_post_trimming
 
 # Define a function to run Trimmomatic
 trim_function() {
