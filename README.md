@@ -9,6 +9,6 @@ This repository contains the required python scripts and associated data to trai
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
 
 ### Machine learning analysis workflow
-![Alt text](Figures/ML_analysis_workflow.jpg)
+![Alt text](Figures/ML_analysis_workflow.png)
 
 
