@@ -11,4 +11,5 @@ This repository contains the required python scripts and associated data to trai
 ### Machine learning analysis workflow
 ![Alt text](Figures/ML_analysis_workflow.png)
 
-
+### Please cite our article here
+Babirye, S.R., Nsubuga, M., Mboowa, G. et al. Machine learning-based prediction of antibiotic resistance in Mycobacterium tuberculosis clinical isolates from Uganda. BMC Infect Dis 24, 1391 (2024). https://doi.org/10.1186/s12879-024-10282-7
