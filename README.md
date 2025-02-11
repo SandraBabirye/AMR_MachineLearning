@@ -41,7 +41,7 @@ Before running the script, ensure the following **tools** are installed together
 
 ### Machine learning (ML) analysis
 
-n the current study, we trained ten machine learning algorithms to predict antimicrobial resistance (AMR) for the antibiotics Rifampicin (RIF), Isoniazid (INH), Ethambutol (EMB), and Streptomycin (STM). The algorithms used include:
+In the current study, we trained ten machine learning algorithms to predict antimicrobial resistance (AMR) for the antibiotics Rifampicin (RIF), Isoniazid (INH), Ethambutol (EMB), and Streptomycin (STM). The algorithms used include:
 
 1. **Extreme Gradient Boosting classifier (XGBoost)**
 2. **Gradient Boosting (GBC)**
