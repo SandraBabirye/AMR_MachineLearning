@@ -1,16 +1,19 @@
 #!/bin/bash
 
+Reads        ="Fastq_files/"
+SAMPLE_FILE  ="Sample_list.txt"
+
 # Create the project_reads directory if it doesn't exist
-mkdir -p project_reads
+mkdir -p "$Reads"
 
 # Path to the text file containing sample names
-SAMPLE_FILE="samples.txt"
+SAMPLE_FILE="Sample_list.txt"
 
 # Function to download a sample using fasterq-dump
 download_sample() {
     local sample=$1
     echo "Downloading $sample..."
-    sratoolkit.3.0.7-ubuntu64/bin/fasterq-dump-orig.3.0.7 $sample --outdir project_reads/
+    sratoolkit.3.0.7-ubuntu64/bin/fasterq-dump-orig.3.0.7 $sample --outdir "$Reads"
 }
 
 export -f download_sample
