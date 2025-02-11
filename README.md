@@ -37,6 +37,22 @@ Before running the script, ensure the following **tools** are installed together
 - `bracken`
 - `parallel`
 
+## Environment Setup
+
+To ensure that you have all the necessary dependencies and tools installed , we have provided an environment YAML file in the `Envs` directory. Follow these steps to set up the environment:
+
+1. Navigate to the `Envs` directory where the YAML file is located:
+
+   ```bash
+   cd Envs
+   
+2. Create and activate the environment using Conda (make sure Conda is installed on your system):
+   conda env create -f environment.yml
+   
+4. Activate the environment
+   conda activate <environment_name>
+   Replace <environment_name> with the actual environment name specified in the environment.yml file.
+
 ### File structure
 
 - `Fastq_files`: Directory containing raw sequencing data files `(.fastq.gz)`.
