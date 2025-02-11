@@ -24,16 +24,18 @@ This analysis was performed using various key steps and tools/softwares in the c
 
 Before running the script, ensure the following **tools** are installed together with their **dependencies**
 
-- **FastQC**
-- **Trimmomatic**
-- **Kraken2 Database**: Download the Kraken2 database, such as `minikraken2_v2_8GB_201904_UPDATE`.
-- **BWA**
-- **Samtools**
-- **BCFtools**
-- **TBProfiler**
-- **Snippy**
-- **SnpEff**
-- **Kraken and Bracken**
+- `FastQC`
+- `Trimmomatic`
+- `BWA`
+- `Samtools`
+- `BCFtools`
+- `TBProfiler`
+- `Snippy`
+- `SnpEff`
+- `Kraken2`
+-  `bracken'
+
+ Also ensure to Download the **Kraken2 database**, such as `minikraken2_v2_8GB_201904_UPDATE` and a **reference genome**
 
 #### Bioinformatics analysis workflow
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
