@@ -33,6 +33,7 @@ Before running the script, ensure the following **tools** are installed together
 - **TBProfiler**
 - **Snippy**
 - **SnpEff**
+- **Kraken and Bracken**
 
 ##### Bioinformatics analysis workflow
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
