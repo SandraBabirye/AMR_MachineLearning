@@ -39,7 +39,7 @@ Before running the script, ensure the following **tools** are installed together
 
 ### File structure
 
-- `project_reads/`: Directory containing raw sequencing data files `(.fastq.gz)`.
+- `Fastq_files`: Directory containing raw sequencing data files `(.fastq.gz)`.
 - `Results/` :  Directory for all output results including trimmed reads, QC reports, and analysis results.
 - `Kraken2 database` : Kraken database directory such as `minikraken2_v2_8GB_201904_UPDATE`
 - `ref` : Directory containing the **reference genome**
@@ -57,8 +57,27 @@ Before running the script, ensure the following **tools** are installed together
 **Input**: `Sample_list.txt`
 
 ```
-PROJECT_READS_DIR="project_reads"
+Reads        ="Fastq_files/"
+SAMPLE_FILE  ="Sample_list.txt"
+
+# Create the project_reads directory if it doesn't exist
+mkdir -p "$Reads"
+
+# Path to the text file containing sample names
 SAMPLE_FILE="Sample_list.txt"
+
+# Function to download a sample using fasterq-dump
+download_sample() {
+    local sample=$1
+    echo "Downloading $sample..."
+    sratoolkit.3.0.7-ubuntu64/bin/fasterq-dump-orig.3.0.7 $sample --outdir "$Reads"
+}
+
+export -f download_sample
+
+# Read the sample names from the file and run downloads in parallel
+cat $SAMPLE_FILE | parallel -j 4 download_sample
+
 ```
 #### Step 2: Run FastQC on Raw Reads (Before Trimming)
 
@@ -154,29 +173,35 @@ Kraken2 is used for taxonomic classification of sequencing reads. Bracken is the
 
 ```
 # Define paths and directories
-kraken_db_dir="minikraken2_v2_8GB_201904_UPDATE/"
-trimmed_dir="Results/Trimmed/"
-kraken_reports_dir="Kraken"
-bracken_reports_dir="Bracken"
-classification_kraken_dir="classification_kraken"
-num_jobs=4
+kraken_db_dir="Kraken2_database/minikraken2_v2_8GB_201904_UPDATE/"
+Trimmed_reads="Results/Trimmed/"
+kraken_reports_dir="Results/Kraken"
+bracken_reports_dir="Results/Bracken"
+classification_kraken_dir="Results/classification_kraken"
 
-Trimmed_reads= "Results/Trimmed/"
-kraken_db_dir = "Kraken2_db"
+# Create output directories if they don't exist
+mkdir -p "$kraken_reports_dir" "$bracken_reports_dir" "$classification_kraken_dir"
 
+# Define Kraken2 and Bracken classification function
 kraken_function() {
     trimmed_file_1=$1
     sample_name=$(basename "$trimmed_file_1" _1.trimmed.fastq.gz)
     trimmed_file_2="${Trimmed_reads}${sample_name}_2.trimmed.fastq.gz"
     
-    kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input --report "$kraken_reports_dir/${sample_name}.kraken" --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "${classification_kraken_dir}/${sample_name}.kraken"
-    bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken" -l S -o "$bracken_reports_dir/${sample_name}.bracken"
+    # Run Kraken2
+    kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input \
+        --report "$kraken_reports_dir/${sample_name}.kraken_report" \
+        --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "$classification_kraken_dir/${sample_name}.kraken"
+
+    # Run Bracken (Species-level estimation)
+    bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken_report" \
+        -l S -o "$bracken_reports_dir/${sample_name}.bracken"
 }
 
 export -f kraken_function
 
-find "$trimmed_dir" -name '*_1.trimmed.fastq.gz' | \
-    parallel -j 4 kraken_function {}
+# Run classification in parallel
+find "$Trimmed_reads" -name '*_1.trimmed.fastq.gz' | parallel -j 2 kraken_function {}
 
 ```
 
