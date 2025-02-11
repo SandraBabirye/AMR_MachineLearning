@@ -1,124 +1,115 @@
 #!/bin/bash
 
-# Define paths and directories
-fastqc_dir="Results/FastQC_Results"
-kraken_db_dir="minikraken2_v2_8GB_201904_UPDATE/"
-trimmed_dir="Results/Trimmed/"
-kraken_reports_dir="Kraken"
-bracken_reports_dir="Bracken"
-classification_kraken_dir="classification_kraken"
+# Set strict error handling
+set -euo pipefail
+
+# Define directories
+Reads="Fastq_files/"
+SAMPLE_FILE="Sample_list.txt"
+QC_Pre_trim="Results/Pre_trim_QC"
+MultiQC_pre_trim="Results/Multiqc_Pre_trim"
+Trimmed_reads="Results/Trimmed"
+Multiqc_post_trim="Results/Multiqc_post_trimming"
+QC_Post_trim="Results/QC_Post_trim"
+kraken_db_dir="Kraken2_database/minikraken2_v2_8GB_201904_UPDATE/"
+kraken_reports_dir="Results/Kraken"
+bracken_reports_dir="Results/Bracken"
+classification_kraken_dir="Results/classification_kraken"
 SAM_DIR="Results/sam"
 BAM_DIR="Results/bam"
-SORTED_BAM_DIR="Results/sorted.bam"
+SORTED_BAM_DIR="Results/sorted_bam"
 BCF_DIR="Results/bcf"
 VCF_DIR="Results/vcf"
 FILTERED_VCF_DIR="Results/Filtered_vcfs"
 SNPS_DIR="Results/SNPS"
 INDELS_DIR="Results/INDELS"
 POS_REF_ALT_DIR="Results/POS_REF_ALT_Extracted"
-PROJECT_READS_DIR="project_reads"
-SAMPLE_FILE="Sample_list.txt"
 REFERENCE_GENOME="ref/MTB_Ref.fasta"
-num_jobs=4
+THREADS=4
 
 # Create necessary directories
-mkdir -p "$fastqc_dir" "$kraken_reports_dir" "$bracken_reports_dir" "$classification_kraken_dir"
-mkdir -p "$SAM_DIR" "$BAM_DIR" "$SORTED_BAM_DIR" "$BCF_DIR" "$VCF_DIR" "$FILTERED_VCF_DIR" "$SNPS_DIR" "$INDELS_DIR" "$POS_REF_ALT_DIR" "$PROJECT_READS_DIR"
-mkdir -p Results/Trimmed Results/TrimmedUnpaired Results/Post_trimming_QC Results/Multiqc_post_trimming
+mkdir -p "$Reads" "$QC_Pre_trim" "$MultiQC_pre_trim" "$Trimmed_reads" "$kraken_reports_dir" \
+         "$bracken_reports_dir" "$classification_kraken_dir" "$SAM_DIR" "$BAM_DIR" "$SORTED_BAM_DIR" \
+         "$BCF_DIR" "$VCF_DIR" "$FILTERED_VCF_DIR" "$SNPS_DIR" "$INDELS_DIR" "$POS_REF_ALT_DIR" "ref"
 
-# Step 1: Run FastQC on raw reads (before trimming)
-echo "Running FastQC on raw reads..."
-find reads -name '*_1.fastq.gz' | \
-    parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
-
-# Step 2: Perform trimming using Trimmomatic (in parallel)
-trim_function() {
-    infile=$1
-    base=$(basename ${infile} _1.fastq.gz)
-    Trimmed_R1="$trimmed_dir/${base}_1.trimmed.fastq.gz"
-    Trimmed_R2="$trimmed_dir/${base}_2.trimmed.fastq.gz"
-    TrimmedUn_R1="Results/TrimmedUnpaired/${base}_1un.trimmed.fastq.gz"
-    TrimmedUn_R2="Results/TrimmedUnpaired/${base}_2un.trimmed.fastq.gz"
-    trimmomatic PE -threads 20 -phred33 ${infile} reads/${base}_2.fastq.gz $Trimmed_R1 $TrimmedUn_R1 $Trimmed_R2 $TrimmedUn_R2 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True SLIDINGWINDOW:4:20 MINLEN:25
-
-    ## Removing the unpaired reads
-    rm -rf $TrimmedUn_R1
-    rm -rf $TrimmedUn_R2
-
+# Function to download samples
+download_sample() {
+    local sample=$1
+    echo "Downloading $sample..."
+    sratoolkit.3.0.7-ubuntu64/bin/fasterq-dump-orig.3.0.7 $sample --outdir "$Reads"
 }
+export -f download_sample
 
+# Download samples in parallel
+cat "$SAMPLE_FILE" | parallel -j $THREADS download_sample {}
+
+# Run FastQC before trimming
+find "$Reads" -name '*_1.fastq.gz' | parallel -j $THREADS fastqc -o "$QC_Pre_trim" --threads $THREADS {}
+
+# Run MultiQC
+multiqc -o "$MultiQC_pre_trim" "$QC_Pre_trim"
+
+# Trimming function
+trim_function() {
+    infile="$1"
+    base=$(basename "$infile" _1.fastq.gz)
+    Trimmed_R1="$Trimmed_reads/${base}_1.trimmed.fastq.gz"
+    Trimmed_R2="$Trimmed_reads/${base}_2.trimmed.fastq.gz"
+    TrimmedUn_R1="$Trimmed_reads/${base}_1un.trimmed.fastq.gz"
+    TrimmedUn_R2="$Trimmed_reads/${base}_2un.trimmed.fastq.gz"
+    trimmomatic PE -threads $THREADS -phred33 "$infile" "${Reads}${base}_2.fastq.gz" \
+        "$Trimmed_R1" "$TrimmedUn_R1" "$Trimmed_R2" "$TrimmedUn_R2" \
+        ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True SLIDINGWINDOW:4:20 MINLEN:25
+}
 export -f trim_function
 
-find reads -name '*_1.fastq.gz' | \
-    parallel -j 3 trim_function {} {= s/_1.fastq.gz/_2.fastq.gz/ =}
+# Run trimming in parallel
+find "$Reads" -name '*_1.fastq.gz' | parallel -j $THREADS trim_function {}
 
-# Step 3: Run FastQC on trimmed reads
-echo "Running FastQC on trimmed reads..."
-find "$trimmed_dir" -name '*_1.trimmed.fastq.gz' | \
-    parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
+# Run FastQC on trimmed reads
+find "$Trimmed_reads" -name '*.fastq.gz' | parallel -j $THREADS fastqc -o "$QC_Post_trim" --threads $THREADS {}
 
-# Step 4: Kraken and Bracken Taxonomy Investigation (in parallel)
-echo "Running Kraken and Bracken analysis..."
+# Run MultiQC after trimming
+multiqc -o "$Multiqc_post_trim" "$QC_Post_trim"
 
+# Kraken function
 kraken_function() {
     trimmed_file_1=$1
     sample_name=$(basename "$trimmed_file_1" _1.trimmed.fastq.gz)
-    trimmed_file_2="${trimmed_dir}${sample_name}_2.trimmed.fastq.gz"
-    
-    kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input --report "$kraken_reports_dir/${sample_name}.kraken" --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "${classification_kraken_dir}/${sample_name}.kraken"
-    bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken" -l S -o "$bracken_reports_dir/${sample_name}.bracken"
+    trimmed_file_2="${Trimmed_reads}/${sample_name}_2.trimmed.fastq.gz"
+    kraken2 --use-names --threads $THREADS --db "$kraken_db_dir" --fastq-input \
+        --report "$kraken_reports_dir/${sample_name}.kraken_report" \
+        --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "$classification_kraken_dir/${sample_name}.kraken"
+    bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken_report" \
+        -l S -o "$bracken_reports_dir/${sample_name}.bracken"
 }
-
 export -f kraken_function
 
-find "$trimmed_dir" -name '*_1.trimmed.fastq.gz' | \
-    parallel -j 4 kraken_function {}
+# Run Kraken2 classification in parallel
+find "$Trimmed_reads" -name '*_1.trimmed.fastq.gz' | parallel -j 2 kraken_function {}
 
-# Step 5: Variant calling process (in parallel)
+# Variant calling function
 process_sample() {
-    sample=$1
-    
-    # Indexing the reference genome (if not indexed already)
-    if [ ! -e "$REFERENCE_GENOME.bwt" ]; then
-        bwa index $REFERENCE_GENOME
+    local sample=$1
+    if [ ! -e "${REFERENCE_GENOME}.bwt" ]; then
+        bwa index "$REFERENCE_GENOME"
     fi
-    
-    # Step 1: Alignment with BWA
-    bwa mem -t 4 $REFERENCE_GENOME "$PROJECT_READS_DIR/${sample}_1.trimmed.fastq.gz" "$PROJECT_READS_DIR/${sample}_2.trimmed.fastq.gz" > "$SAM_DIR/${sample}.sam"
-
-    # Step 2: Convert SAM to BAM and sort with Samtools
+    bwa mem -t $THREADS "$REFERENCE_GENOME" "${Trimmed_reads}/${sample}_1.trimmed.fastq.gz" \
+        "${Trimmed_reads}/${sample}_2.trimmed.fastq.gz" > "$SAM_DIR/${sample}.sam"
     samtools view -S -b -o "$BAM_DIR/${sample}.bam" "$SAM_DIR/${sample}.sam"
-    samtools sort "$BAM_DIR/${sample}.bam" > "$SORTED_BAM_DIR/${sample}.sorted.bam"
-
-    # Step 3: Variant calling with BCFtools
-    bcftools mpileup -O b -o "$BCF_DIR/${sample}.bcf" -f $REFERENCE_GENOME --threads 8 "$SORTED_BAM_DIR/${sample}.sorted.bam"
-
-    # Step 4: Convert BCF to VCF
+    samtools sort "$BAM_DIR/${sample}.bam" -o "$SORTED_BAM_DIR/${sample}.sorted.bam"
+    bcftools mpileup -O b -o "$BCF_DIR/${sample}.bcf" -f "$REFERENCE_GENOME" --threads $THREADS "$SORTED_BAM_DIR/${sample}.sorted.bam"
     bcftools call --ploidy 1 -m -v -o "$VCF_DIR/${sample}.vcf" "$BCF_DIR/${sample}.bcf"
-
-    # Step 5: Filtering the variants for Quality and Depth of coverage
-    bcftools filter -i 'QUAL >= 30 && DP >= 10' "$VCF_DIR/${sample}.vcf" | bcftools view -i 'FILTER="PASS"' -Oz -o "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz"
-
-    # Step 6: Extract SNPs from the VCF file
+    bcftools filter -i 'QUAL >= 30 && DP >= 10' "$VCF_DIR/${sample}.vcf" | \
+        bcftools view -i 'FILTER="PASS"' -Oz -o "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz"
     bcftools view -v snps "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz" -Oz -o "$SNPS_DIR/${sample}_snps.vcf.gz"
-
-    # Step 7: Extract Indels
     bcftools view -v indels "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz" -Oz -o "$INDELS_DIR/${sample}_indels.vcf.gz"
-
-    # Step 8: Extract Position, Reference allele, and Alternative allele
     bcftools query -f '%POS\t%REF\t%ALT\n' --print-header "$SNPS_DIR/${sample}_snps.vcf.gz" > "$POS_REF_ALT_DIR/${sample}.tsv"
-
-    # Step 9: Clean up intermediate files
-    rm -rf "$SAM_DIR/${sample}.sam"
-    rm -rf "$SORTED_BAM_DIR/${sample}.sorted.bam"
-    rm -rf "$BAM_DIR/${sample}.bam"
+    rm -f "$SAM_DIR/${sample}.sam" "$SORTED_BAM_DIR/${sample}.sorted.bam" "$BAM_DIR/${sample}.bam"
 }
-
 export -f process_sample
 
-# Run the variant calling in parallel for each input sample
-mapfile -t input_files < "$SAMPLE_FILE"
-parallel -j "$num_jobs" process_sample ::: "${input_files[@]}"
+# Process samples in parallel
+parallel -j $THREADS process_sample ::: $(cat "$SAMPLE_FILE")
 
-echo "Kraken, Bracken, and Variant calling analysis completed."
-
+echo "Pipeline completed successfully."
