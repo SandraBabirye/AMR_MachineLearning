@@ -6,6 +6,9 @@ This repository contains bioinformatics scripts, Jupyter notebooks, and data for
 ## Bioinformatics analysis for the whole genome sequence data
 This analysis was performed using various key steps and tools/softwares in the command line.
 
+#### Bioinformatics analysis workflow
+![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
+
 ## Overview of the steps
 - Quality control
   1.Quality assessment 
@@ -18,7 +21,7 @@ This analysis was performed using various key steps and tools/softwares in the c
 - Variant annotation
 - Lineage and drug resistance prediction 
 
-**Note** We used the snippy pipeline that does variant calling and also generates a core genome alignment file for phylogenetic tree construction.
+**Note** We used the `snippy pipeline` that does variant calling and also generates a core genome alignment file for phylogenetic tree construction. However in this document we have provided detailed step by step information for some of the individual tools used in the pipeline. We have also created a bash script with all these steps merged into one.
 
 ## Pre-Requisites
 
@@ -65,10 +68,6 @@ To ensure that you have all the necessary dependencies and tools installed , we 
 - `ref` : Directory containing the **reference genome**
 - `Sample_list.txt` : A file containing the list of accession numbers for various samples to be dowloaded from a public repository for analysis.
 
-### Set file paths
-
-#### Bioinformatics analysis workflow
-![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
 
 ### Detailed Pipeline Steps 
 
