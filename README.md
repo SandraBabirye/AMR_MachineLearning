@@ -76,8 +76,7 @@ To ensure that you have all the necessary dependencies and tools installed , we 
 **Input**: `Sample_list.txt`
 
 ```
-Reads        ="Fastq_files/"
-SAMPLE_FILE  ="Sample_list.txt"
+Reads="Fastq_files/"
 
 # Create the project_reads directory if it doesn't exist
 mkdir -p "$Reads"
@@ -108,8 +107,8 @@ FastQC helps to assess the quality of the raw reads. MultiQC helps aggregate the
 
 ```
 # Define the directory variable
-QC_pre_trim          ="Results/Pre_trim_QC" 
-MultiQC_pre_trim     ="Results/Multiqc_Pre_trim"
+QC_pre_trim="Results/Pre_trim_QC" 
+MultiQC_pre_trim="Results/Multiqc_Pre_trim"
 
 # Creating directories 
 mkdir -p  "$QC_Pre_trim" "$MultiQC_pre_trim"
@@ -170,9 +169,9 @@ After trimming, FastQC is run again to assess the quality of the trimmed reads.
 ```
 
 # Define the directory variable
-Trimmed_reads       = "Results/Trimmed"
-Multiqc_post_trim   = "Results/Multiqc_post_trimming"
-QC_Post_trim        ="Results/QC_Post_trim"
+Trimmed_reads= "Results/Trimmed"
+Multiqc_post_trim= "Results/Multiqc_post_trimming"
+QC_Post_trim="Results/QC_Post_trim"
 
 # Creating directories 
 mkdir -p "$fastqc_dir" "$Multiqc_dir"
