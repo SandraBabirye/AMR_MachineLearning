@@ -1,7 +1,7 @@
 #!/bin/bash
 
-Reads        ="Fastq_files/"
-SAMPLE_FILE  ="Sample_list.txt"
+Reads="Fastq_files/"
+SAMPLE_FILE="Sample_list.txt"
 
 # Create the project_reads directory if it doesn't exist
 mkdir -p "$Reads"
