@@ -324,6 +324,24 @@ When running the final script provide the path to the sample list as ` `Sample_l
 bash analysis_script.sh  Sample_list.txt Results
 ```
 
+### Additional step specific to MTB isolates which i used in this project: Lineage and drug resistance prediction using TBProfiler
+```
+# Directories to store output files
+Reads="Fastq_files/"
+SAMPLE_FILE="Sample_list.txt"
+
+# Create necessary directories
+mkdir -p bam vcf results
+
+# To silence the citation option
+parallel --citation --bibtex
+
+# Run TB-Profiler in parallel
+cat "$SAMPLE_FILE" | parallel --bar -j 2 tb-profiler profile -1 "$Reads"{}_1.fastq.gz -2 "$Reads"input/{}_2.fastq.gz -p {}
+
+```
+
+
 ### Machine learning (ML) analysis
 
 In the current study, we trained ten machine learning algorithms to predict antimicrobial resistance (AMR) for the antibiotics Rifampicin (RIF), Isoniazid (INH), Ethambutol (EMB), and Streptomycin (STM). The algorithms used include:
