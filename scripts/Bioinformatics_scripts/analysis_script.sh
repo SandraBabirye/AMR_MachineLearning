@@ -3,27 +3,36 @@
 # Set strict error handling
 set -euo pipefail
 
+# Check if the required arguments are provided
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <Sample_list.txt> <Results_output_directory>"
+    exit 1
+fi
+
+# Assign arguments to variables
+SAMPLE_FILE="$1"
+RESULTS_DIR="$2"
+
 # Define directories
-Reads="Fastq_files/"
-SAMPLE_FILE="Sample_list.txt"
-QC_Pre_trim="Results/Pre_trim_QC"
-MultiQC_pre_trim="Results/Multiqc_Pre_trim"
-Trimmed_reads="Results/Trimmed"
-Multiqc_post_trim="Results/Multiqc_post_trimming"
-QC_Post_trim="Results/QC_Post_trim"
+Reads="${RESULTS_DIR}/Fastq_files/"
+QC_Pre_trim="${RESULTS_DIR}/Pre_trim_QC"
+MultiQC_pre_trim="${RESULTS_DIR}/Multiqc_Pre_trim"
+Trimmed_reads="${RESULTS_DIR}/Trimmed"
+Multiqc_post_trim="${RESULTS_DIR}/Multiqc_post_trimming"
+QC_Post_trim="${RESULTS_DIR}/QC_Post_trim"
 kraken_db_dir="Kraken2_database/minikraken2_v2_8GB_201904_UPDATE/"
-kraken_reports_dir="Results/Kraken"
-bracken_reports_dir="Results/Bracken"
-classification_kraken_dir="Results/classification_kraken"
-SAM_DIR="Results/sam"
-BAM_DIR="Results/bam"
-SORTED_BAM_DIR="Results/sorted_bam"
-BCF_DIR="Results/bcf"
-VCF_DIR="Results/vcf"
-FILTERED_VCF_DIR="Results/Filtered_vcfs"
-SNPS_DIR="Results/SNPS"
-INDELS_DIR="Results/INDELS"
-POS_REF_ALT_DIR="Results/POS_REF_ALT_Extracted"
+kraken_reports_dir="${RESULTS_DIR}/Kraken"
+bracken_reports_dir="${RESULTS_DIR}/Bracken"
+classification_kraken_dir="${RESULTS_DIR}/classification_kraken"
+SAM_DIR="${RESULTS_DIR}/sam"
+BAM_DIR="${RESULTS_DIR}/bam"
+SORTED_BAM_DIR="${RESULTS_DIR}/sorted_bam"
+BCF_DIR="${RESULTS_DIR}/bcf"
+VCF_DIR="${RESULTS_DIR}/vcf"
+FILTERED_VCF_DIR="${RESULTS_DIR}/Filtered_vcfs"
+SNPS_DIR="${RESULTS_DIR}/SNPS"
+INDELS_DIR="${RESULTS_DIR}/INDELS"
+POS_REF_ALT_DIR="${RESULTS_DIR}/POS_REF_ALT_Extracted"
 REFERENCE_GENOME="ref/MTB_Ref.fasta"
 THREADS=4
 
@@ -96,15 +105,24 @@ process_sample() {
     fi
     bwa mem -t $THREADS "$REFERENCE_GENOME" "${Trimmed_reads}/${sample}_1.trimmed.fastq.gz" \
         "${Trimmed_reads}/${sample}_2.trimmed.fastq.gz" > "$SAM_DIR/${sample}.sam"
+        
     samtools view -S -b -o "$BAM_DIR/${sample}.bam" "$SAM_DIR/${sample}.sam"
+    
     samtools sort "$BAM_DIR/${sample}.bam" -o "$SORTED_BAM_DIR/${sample}.sorted.bam"
+    
     bcftools mpileup -O b -o "$BCF_DIR/${sample}.bcf" -f "$REFERENCE_GENOME" --threads $THREADS "$SORTED_BAM_DIR/${sample}.sorted.bam"
+    
     bcftools call --ploidy 1 -m -v -o "$VCF_DIR/${sample}.vcf" "$BCF_DIR/${sample}.bcf"
+    
     bcftools filter -i 'QUAL >= 30 && DP >= 10' "$VCF_DIR/${sample}.vcf" | \
         bcftools view -i 'FILTER="PASS"' -Oz -o "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz"
+    
     bcftools view -v snps "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz" -Oz -o "$SNPS_DIR/${sample}_snps.vcf.gz"
+    
     bcftools view -v indels "$FILTERED_VCF_DIR/${sample}_filtered.vcf.gz" -Oz -o "$INDELS_DIR/${sample}_indels.vcf.gz"
+    
     bcftools query -f '%POS\t%REF\t%ALT\n' --print-header "$SNPS_DIR/${sample}_snps.vcf.gz" > "$POS_REF_ALT_DIR/${sample}.tsv"
+    
     rm -f "$SAM_DIR/${sample}.sam" "$SORTED_BAM_DIR/${sample}.sorted.bam" "$BAM_DIR/${sample}.bam"
 }
 export -f process_sample
