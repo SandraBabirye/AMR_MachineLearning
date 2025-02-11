@@ -299,7 +299,11 @@ parallel -j "$num_jobs" process_sample ::: "${input_files[@]}"
 ```
 **Note** : To improve efficiency, most tasks (FastQC, trimming, Kraken classification, and variant calling) are run in parallel using GNU Parallel. This allows the pipeline to process multiple samples simultaneously, speeding up the analysis for large datasets.
 
-### Step 6: Running the bash script
+### Step 7: Running the bash script
+
+```
+bash analysis_script.sh
+```
 
 ### Machine learning (ML) analysis
 
