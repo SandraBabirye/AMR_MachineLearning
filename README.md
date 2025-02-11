@@ -25,7 +25,7 @@ This analysis was performed using various key steps and tools/softwares in the c
 
 ## Pre-Requisites
 
-Before running the script, ensure the following **tools** are installed together with their **dependencies**
+Before running the script, ensure the following **tools** are installed together with their **dependencies**. These tools can be installed using Conda
 
 - `FastQC`
 - `Fasterqdump` from the SRAtool kit
