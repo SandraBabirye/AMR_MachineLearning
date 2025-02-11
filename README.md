@@ -25,6 +25,7 @@ This analysis was performed using various key steps and tools/softwares in the c
 Before running the script, ensure the following **tools** are installed together with their **dependencies**
 
 - `FastQC`
+- `Fasterqdump` from the SRAtool kit
 - `Trimmomatic`
 - `BWA`
 - `Samtools`
@@ -33,9 +34,15 @@ Before running the script, ensure the following **tools** are installed together
 - `Snippy`
 - `SnpEff`
 - `Kraken2`
--  `bracken'
+- `bracken`
 
- Also ensure to Download the **Kraken2 database**, such as `minikraken2_v2_8GB_201904_UPDATE` and a **reference genome**
+### File structure
+
+- `project_reads/`: Directory containing raw sequencing data files `(.fastq.gz)`.
+- `Results/' :  Directory for all output results including trimmed reads, QC reports, and analysis results.
+- `Kraken2 database` : Kraken database directory such as `minikraken2_v2_8GB_201904_UPDATE`
+- `ref` : Directory containing the **reference genome**
+- 'Sample_list.txt` : A file containing the list of accession numbers for various samples to be dowloaded from a public repository for analysis.
 
 #### Bioinformatics analysis workflow
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
@@ -59,6 +66,7 @@ In the current study, we trained ten machine learning algorithms to predict anti
 The prediction was based on whole-genome sequencing (WGS) and clinical data (age, sex, and HIV status), with categorical features encoded using one-hot encoding.
 
 **Note**: The SNPmatrix which consisted of genomic variations across the entire genome and the clinica data variables were the  the predictor variables and the phenotypic drug susceptibility testing (DST) data for the drugs was the target variable.
+
 
 #### ML analysis workflow
 ![Alt text](Figures/ML_analysis_workflow.png)
