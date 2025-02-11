@@ -35,7 +35,7 @@ Before running the script, ensure the following **tools** are installed together
 - **SnpEff**
 - **Kraken and Bracken**
 
-##### Bioinformatics analysis workflow
+#### Bioinformatics analysis workflow
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
 
 
