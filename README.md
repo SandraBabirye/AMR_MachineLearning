@@ -124,6 +124,7 @@ multiqc -o "$MultiQC_pre_trim" "$QC_Pre_trim"
 ### Step 3: Perform Trimming with Trimmomatic
 
 Trimmomatic is used to trim low-quality sequences and adapter contamination from reads. The process is done in parallel to speed up the workflow.
+**NB**: The arguments for trimmomatic can varry depending on the quality of your reads ie ```LEADING, TRAILING, MINLEN, SLIDINGWINDOW```etc. Also we used `TruSeq3-PE.fa` as the adapater sequence in this study. It also varry.
 
 **Input**: Paired-end raw fastq files.
 
