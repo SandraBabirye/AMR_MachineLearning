@@ -3,14 +3,6 @@
 mkdir -p Results/sam  Results/bam   Results/sorted.bam   Results/bcf    Results/vcf Results/Filtered_vcfs  Results/SNPS Results/INDELS Results/POS_REF_ALT_Extracted 
 
 # Set paths and filenames
-#input_dir=Results/trimmed/
-#sam="~/Research_container/Results/sam/"
-#bam="~/Research_container/Results/bam/"
-#sorted.bam= "~/Research_container/Results/sorted.bam/"
-#bcf="~/Research_container/Results/bcf/"
-#vcf="~/Research_container/Results/vcf/"
-#sample_file=list_samples.txt
-
 #reference=MTB_Ref.fasta
 
 
