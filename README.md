@@ -61,8 +61,8 @@ FastQC helps to assess the quality of the raw reads. MultiQC helps aggregate the
 
 ```
 # Define the directory variable
-QC_pre_trim="Results/Pre_trim_QC" 
-MultiQC_pre_trim="Results/Multiqc_Pre_trim"
+QC_pre_trim          ="Results/Pre_trim_QC" 
+MultiQC_pre_trim     ="Results/Multiqc_Pre_trim"
 
 # Creating directories 
 mkdir -p  "$QC_Pre_trim" "$MultiQC_pre_trim"
@@ -84,7 +84,7 @@ Trimmomatic is used to trim low-quality sequences and adapter contamination from
 **Output**: Trimmed paired-end reads saved in the `Results/Trimmed/` directory and unpaired reads in the `Results/TrimmedUnpaired/` directory.
 ```
 # Create necessary directories
-mkdir -p Results/Trimmed  Results/TrimmedUnpaired Results/Post_trimming_QC Results/Multiqc_post_trimming
+mkdir -p Results/Trimmed  Results/TrimmedUnpaired
 
 # Define a function to run Trimmomatic
 trim_function() {
@@ -92,10 +92,10 @@ trim_function() {
     base=$(basename "${infile}" _1.fastq.gz)
 
     ## Define the directory variable
-    Trimmed_R1="Results/Trimmed/${base}_1.trimmed.fastq.gz"
-    Trimmed_R2="Results/Trimmed/${base}_2.trimmed.fastq.gz"
-    TrimmedUn_R1="Results/TrimmedUnpaired/${base}_1un.trimmed.fastq.gz"
-    TrimmedUn_R2="Results/TrimmedUnpaired/${base}_2un.trimmed.fastq.gz"
+    Trimmed_R1      ="Results/Trimmed/${base}_1.trimmed.fastq.gz"
+    Trimmed_R2      ="Results/Trimmed/${base}_2.trimmed.fastq.gz"
+    TrimmedUn_R1    ="Results/TrimmedUnpaired/${base}_1un.trimmed.fastq.gz"
+    TrimmedUn_R2    ="Results/TrimmedUnpaired/${base}_2un.trimmed.fastq.gz"
 
     # Run Trimmomatic
     trimmomatic PE -threads 20 -phred33 \
@@ -121,9 +121,9 @@ After trimming, FastQC is run again to assess the quality of the trimmed reads.
 ```
 
 # Define the directory variable
-Trimmed_reads = "Results/Trimmed"
-Multiqc_dir = "Results/Multiqc_post_trimming"
-fastqc_dir="Results/QC_Post_trim"
+Trimmed_reads       = "Results/Trimmed"
+Multiqc_post_trim   = "Results/Multiqc_post_trimming"
+QC_Post_trim        ="Results/QC_Post_trim"
 
 # Creating directories 
 mkdir -p "$fastqc_dir" "$Multiqc_dir"
@@ -132,7 +132,7 @@ mkdir -p "$fastqc_dir" "$Multiqc_dir"
 find "$Trimmed_reads" -name '*.fastq.gz' | parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
 
 # Run MultiQC to aggregate FastQC results
-multiqc -o "$Multiqc_dir" "$fastqc_dir"
+multiqc -o "$Multiqc_post_trim" "$QC_Post_trim"
 
 ```
 
