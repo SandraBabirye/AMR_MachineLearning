@@ -1,33 +1,32 @@
 #!/bin/bash
 
-# Specify the Kraken database directory
-kraken_db_dir="minikraken2_v2_8GB_201904_UPDATE/"
+# Define paths and directories
+kraken_db_dir="Kraken2_database/minikraken2_v2_8GB_201904_UPDATE/"
+Trimmed_reads="Results/Trimmed/"
+kraken_reports_dir="Results/Kraken"
+bracken_reports_dir="Results/Bracken"
+classification_kraken_dir="Results/classification_kraken"
 
-# Specify the directory containing the trimmed reads
-trimmed_dir="Trimmed/"
+# Create output directories if they don't exist
+mkdir -p "$kraken_reports_dir" "$bracken_reports_dir" "$classification_kraken_dir"
 
-# Create directories for Kraken and Bracken reports
-mkdir -p Kraken Bracken classiffication_kraken
-
-# Loop through each sample's paired trimmed read files in the directory
-for trimmed_file_1 in "$trimmed_dir"*_1.trimmed.fastq.gz; do
-    # Extract the sample name by removing the "_1.trimmed.fastq.gz" suffix
+# Define Kraken2 and Bracken classification function
+kraken_function() {
+    trimmed_file_1=$1
     sample_name=$(basename "$trimmed_file_1" _1.trimmed.fastq.gz)
+    trimmed_file_2="${Trimmed_reads}${sample_name}_2.trimmed.fastq.gz"
     
-    # Define the paths to the paired trimmed read files
-    trimmed_file_2="${trimmed_dir}${sample_name}_2.trimmed.fastq.gz"
-    
-    # Run Kraken with the specified command
-    kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input --report "Kraken/${sample_name}.kraken"  --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "classiffication_kraken/{sample_name}.kraken" &
-    
-    # Wait for the Kraken process to finish before running Bracken
-    wait $!
-    
-    # Run Bracken using the Kraken report
-    bracken -d "$kraken_db_dir" -i "Kraken/${sample_name}.kraken" -l S -o "Bracken/${sample_name}.bracken" &
-done
+    # Run Kraken2
+    kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input \
+        --report "$kraken_reports_dir/${sample_name}.kraken_report" \
+        --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "$classification_kraken_dir/${sample_name}.kraken"
 
-# Wait for all Bracken processes to finish
-wait
+    # Run Bracken (Species-level estimation)
+    bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken_report" \
+        -l S -o "$bracken_reports_dir/${sample_name}.bracken"
+}
 
-echo "Kraken and Bracken analysis completed."
+export -f kraken_function
+
+# Run classification in parallel
+find "$Trimmed_reads" -name '*_1.trimmed.fastq.gz' | parallel -j 2 kraken_function {}
