@@ -1,20 +1,24 @@
 ## Machine Learning-based prediction of antibiotic resistance in Mycobacterium tuberculosis clinical isolates from Uganda 
 Antimircobial resistance (AMR) is a growing challenge recognised as global health emergency posing a great threat to modern medicine. 
-In this study we used both bioinformatics and machine learning approaches for analysis.
+
+This repository contains bioinformatics scripts, Jupyter notebooks, and data for training and testing machine learning (ML) algorithms implemented using the Scikit-learn library in Python. A sample ML script for predicting drug resistance to Rifampicin has been provided as a Jupyter notebook file (.ipynb). This format allows users to break down the script into manageable and understandable sections.
 
 ## Bioinformatics analysis for the whole genome sequence data
 This analysis was performed using various key steps and tools/softwares in the command line.
 
 ## Overview of the steps
 - Quality control
-   1.Quality assessment using FastQC and MultiQC
-   2.Trimming the reads using Trimmomatic
-   3.Read taxonomy investigation
+  1.Quality assessment 
+  2.Trimming the reads 
+  3.Read taxonomy investigation
 - Indexing the reference genome
 - Read mapping
 - Variant calling
 - Variant filtering
 - Variant annotation
+- Lineage and drug resistance prediction 
+
+**Note** We used the snippy pipeline that does variant calling and also generates a core genome alignment file for phylogenetic tree construction.
 
 ## Pre-Requisites
 
@@ -23,22 +27,37 @@ Before running the script, ensure the following **tools** are installed together
 - **FastQC**
 - **Trimmomatic**
 - **Kraken2 Database**: Download the Kraken2 database, such as `minikraken2_v2_8GB_201904_UPDATE`.
-- **BWA**: for reference genome alignment.
+- **BWA**
 - **Samtools**
 - **BCFtools**
+- **TBProfiler**
+- **Snippy**
+- **SnpEff**
 
-
-
-
-
-###### Bioinformatics analysis workflow
+##### Bioinformatics analysis workflow
 ![Alt text](Figures/Bioinformatics_analysis_workflow.jpg)
-#### Genomic data process
 
-### Machine learning analysis workflow
-In the current study, we ten machine learning algorithms including  **Multilayer Perceptron (MLP), Extreme Gradient Boosting classifier (XGBoost), Gradient Boosting (GBC), Adaptive Boosting (adaboost), logistic regression (LR), support vector machine (SVM), random forest (RF), Decision Trees (DT), Extra Trees Classifier (ETC), CatBoost** for the prediction of AMR for the antibiotics rifampicin (RIF), isoniazid (INH), ethambutol (EMB), and streptomycin (STM) based on WGS and clinical data (Age, sex, HIV status)  with one hot encoding.
 
-This repository contains the required python scripts and associated data to train and test Machine Learning (ML) models using most classifiers supported by the python's ski-learn, and associated Bioinformatics packages in a Linux environment. The sample ML script for only one set of drug(rifampicin) has been provided as jupyter notebook file (.ipynb) to enhance users ability to break the scripts down into manageable and understandable sections.
+### Machine learning (ML) analysis
+
+n the current study, we trained ten machine learning algorithms to predict antimicrobial resistance (AMR) for the antibiotics Rifampicin (RIF), Isoniazid (INH), Ethambutol (EMB), and Streptomycin (STM). The algorithms used include:
+
+1. **Extreme Gradient Boosting classifier (XGBoost)**
+2. **Gradient Boosting (GBC)**
+3. **Adaptive Boosting (adaboost)**
+4. **Logistic Regression (LR)**
+5. **Support vector machine (SVM)**
+6. **Random Forest (RF)**
+7. **Decision Trees (DT)**
+8. **Extra Trees Classifier (ETC)**
+9. **CatBoost**
+10. **Multilayer Perceptron (MLP)**
+    
+The prediction was based on whole-genome sequencing (WGS) and clinical data (age, sex, and HIV status), with categorical features encoded using one-hot encoding.
+
+**Note**: The SNPmatrix which consisted of genomic variations across the entire genome and the clinica data variables were the  the predictor variables and the phenotypic drug susceptibility testing (DST) data for the drugs was the target variable.
+
+#### ML analysis workflow
 ![Alt text](Figures/ML_analysis_workflow.png)
 
 ### Please cite our article here
