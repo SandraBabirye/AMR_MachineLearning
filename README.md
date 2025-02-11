@@ -303,7 +303,7 @@ parallel -j "$num_jobs" process_sample ::: "${input_files[@]}"
 When running the final script provide the path to the sample list as ` `Sample_list.txt`  and that for the output results generated during the analysis `Results`
 
 ```
-bash analysis_script.sh  `Sample_list.txt` `Results`
+bash analysis_script.sh  Sample_list.txt Results
 ```
 
 ### Machine learning (ML) analysis
