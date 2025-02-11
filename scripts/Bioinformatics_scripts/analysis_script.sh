@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define paths and directories
-fastqc_dir="FastQC_Results"
+fastqc_dir="Results/FastQC_Results"
 kraken_db_dir="minikraken2_v2_8GB_201904_UPDATE/"
 trimmed_dir="Results/Trimmed/"
 kraken_reports_dir="Kraken"
@@ -18,7 +18,7 @@ INDELS_DIR="Results/INDELS"
 POS_REF_ALT_DIR="Results/POS_REF_ALT_Extracted"
 PROJECT_READS_DIR="project_reads"
 SAMPLE_FILE="Sample_list.txt"
-REFERENCE_GENOME="MTB_Ref.fasta"
+REFERENCE_GENOME="ref/MTB_Ref.fasta"
 num_jobs=4
 
 # Create necessary directories
