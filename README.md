@@ -144,14 +144,23 @@ Kraken2 is used for taxonomic classification of sequencing reads. Bracken is the
 **Output**: Kraken classification reports and Bracken abundance estimates.
 
 ```
+Trimmed_reads= "Results/Trimmed/"
+kraken_db_dir = "Kraken2_db"
+
 kraken_function() {
     trimmed_file_1=$1
     sample_name=$(basename "$trimmed_file_1" _1.trimmed.fastq.gz)
-    trimmed_file_2="${trimmed_dir}${sample_name}_2.trimmed.fastq.gz"
+    trimmed_file_2="${Trimmed_reads}${sample_name}_2.trimmed.fastq.gz"
     
     kraken2 --use-names --threads 4 --db "$kraken_db_dir" --fastq-input --report "$kraken_reports_dir/${sample_name}.kraken" --gzip-compressed --paired "$trimmed_file_1" "$trimmed_file_2" > "${classification_kraken_dir}/${sample_name}.kraken"
     bracken -d "$kraken_db_dir" -i "$kraken_reports_dir/${sample_name}.kraken" -l S -o "$bracken_reports_dir/${sample_name}.bracken"
 }
+
+export -f kraken_function
+
+find "$trimmed_dir" -name '*_1.trimmed.fastq.gz' | \
+    parallel -j 4 kraken_function {}
+
 ```
 
 ### Step 5: Variant calling, Variant filtering, Variant annotation and VCF File manipulation
