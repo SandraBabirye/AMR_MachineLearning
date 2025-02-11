@@ -1,5 +1,5 @@
 ## Machine Learning-based prediction of antibiotic resistance in Mycobacterium tuberculosis clinical isolates from Uganda 
-Antimircobial resistance (AMR) is a growing challenge recognised as global health emergency posing a great threat to modern medicine. 
+Antimicrobial resistance (AMR) is a growing challenge recognised as global health emergency posing a great threat to modern medicine. 
 
 This repository contains bioinformatics scripts, Jupyter notebooks, and data for training and testing machine learning (ML) algorithms implemented using the Scikit-learn library in Python. A sample ML script for predicting drug resistance to Rifampicin has been provided as a Jupyter notebook file (.ipynb). This format allows users to break down the script into manageable and understandable sections.
 
