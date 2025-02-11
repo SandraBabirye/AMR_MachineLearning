@@ -60,11 +60,18 @@ FastQC helps to assess the quality of the raw reads. MultiQC helps aggregate the
 **Output**: Quality control reports saved in the FastQC_Results directory.
 
 ```
-mkdir -p Results/Pre_trim_QC  # Ensure the directory exists
-fastqc_dir="Results/Pre_trim_QC"  # Define the directory variable
+# Define the directory variable
+QC_pre_trim="Results/Pre_trim_QC" 
+MultiQC_pre_trim="Results/Multiqc_Pre_trim"
+
+# Creating directories 
+mkdir -p  "$QC_Pre_trim" "$MultiQC_pre_trim"
 
 # Run FastQC in parallel on all *_1.fastq.gz files in the 'reads' directory
-find reads -name '*_1.fastq.gz' | parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
+find reads -name '*_1.fastq.gz' | parallel -j 4 fastqc -o "$QC_Pre_trim" --threads 4 {}
+
+# Run MultiQC
+multiqc -o "$MultiQC_pre_trim" "$QC_Pre_trim"
 
 ```
 
@@ -76,15 +83,32 @@ Trimmomatic is used to trim low-quality sequences and adapter contamination from
 
 **Output**: Trimmed paired-end reads saved in the `Results/Trimmed/` directory and unpaired reads in the `Results/TrimmedUnpaired/` directory.
 ```
+# Create necessary directories
+mkdir -p Results/Trimmed  Results/TrimmedUnpaired Results/Post_trimming_QC Results/Multiqc_post_trimming
+
+# Define a function to run Trimmomatic
 trim_function() {
     infile=$1
-    base=$(basename ${infile} _1.fastq.gz)
-    Trimmed_R1="$trimmed_dir/${base}_1.trimmed.fastq.gz"
-    Trimmed_R2="$trimmed_dir/${base}_2.trimmed.fastq.gz"
+    base=$(basename "${infile}" _1.fastq.gz)
+
+    ## Define the directory variable
+    Trimmed_R1="Results/Trimmed/${base}_1.trimmed.fastq.gz"
+    Trimmed_R2="Results/Trimmed/${base}_2.trimmed.fastq.gz"
     TrimmedUn_R1="Results/TrimmedUnpaired/${base}_1un.trimmed.fastq.gz"
     TrimmedUn_R2="Results/TrimmedUnpaired/${base}_2un.trimmed.fastq.gz"
-    trimmomatic PE -threads 20 -phred33 ${infile} reads/${base}_2.fastq.gz $Trimmed_R1 $TrimmedUn_R1 $Trimmed_R2 $TrimmedUn_R2 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True SLIDINGWINDOW:4:20 MINLEN:25
+
+    # Run Trimmomatic
+    trimmomatic PE -threads 20 -phred33 \
+        "${infile}" "reads/${base}_2.fastq.gz" \
+        "$Trimmed_R1" "$TrimmedUn_R1" "$Trimmed_R2" "$TrimmedUn_R2" \
+        ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True SLIDINGWINDOW:4:20 MINLEN:25
 }
+
+export -f trim_function
+
+# Run trimming in parallel
+find reads -name '*_1.fastq.gz' | parallel -j 3 trim_function {}
+
 ```
 
 ### Step3: Run FastQC on Trimmed reads
@@ -95,9 +119,20 @@ After trimming, FastQC is run again to assess the quality of the trimmed reads.
 **Output**: Quality control reports for trimmed reads.
 
 ```
-mkdir Results/QC_Post_trim/
-fastqc_dir = "Results/QC_Post_trim/"
-find "$trimmed_dir" -name '*_1.trimmed.fastq.gz' | parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
+
+# Define the directory variable
+Trimmed_reads = "Results/Trimmed"
+Multiqc_dir = "Results/Multiqc_post_trimming"
+fastqc_dir="Results/QC_Post_trim"
+
+# Creating directories 
+mkdir -p "$fastqc_dir" "$Multiqc_dir"
+
+# Run FastQC on trimmed reads
+find "$Trimmed_reads" -name '*.fastq.gz' | parallel -j 4 fastqc -o "$fastqc_dir" --threads 4 {}
+
+# Run MultiQC to aggregate FastQC results
+multiqc -o "$Multiqc_dir" "$fastqc_dir"
 
 ```
 
